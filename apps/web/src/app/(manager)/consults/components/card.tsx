@@ -1,8 +1,71 @@
 "use client";
 import { motion } from "framer-motion";
 import { Ban, Edit, Eye } from "lucide-react";
+import { useRef } from "react";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+
+import { ModalConsult } from "./modal-new-consult";
+
+function FooterCard({ index }: { index: number }) {
+  const ref = useRef<HTMLButtonElement>(null);
+
+  return (
+    <>
+      <footer className="mt-4 flex gap-3">
+        {index === 0 && (
+          <Button>
+            <Eye className="size-4" />
+            Visualizar
+          </Button>
+        )}
+        {index > 0 && (
+          <>
+            <Button onClick={() => ref.current?.click()} variant={"default"}>
+              <Edit className="size-4" />
+              Editar consulta
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant={"destructive"}>
+                  <Ban className="size-4" />
+                  Cancelar consulta
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="border-b p-2">
+                    Você tem certeza?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="font-normal">
+                    Esta ação irá cancelar a consulta e não poderá ser desfeita,
+                    após a confirmação a agenda do seu paciente será atualizada.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="border-t pt-4">
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction>Confirmar</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
+        )}
+      </footer>
+      <ModalConsult id="1asda" ref={ref} />
+    </>
+  );
+}
 
 export function CardConsult({ index }: { index: number }) {
   return (
@@ -45,50 +108,31 @@ export function CardConsult({ index }: { index: number }) {
       <strong className="text-lg">Gustavo Murdiga</strong>
       <ul className="my-2 inline-block space-y-2">
         <li className="flex items-center justify-between gap-2">
-          <span className="text-muted-foreground text-sm font-normal">
+          <span className="text-muted-foreground text-xs font-semibold">
             Dia:
           </span>
-          <strong className="text-primary text-sm font-semibold">
+          <strong className="text-primary text-xs font-semibold">
             20/04/2025
           </strong>
         </li>
         <li className="flex items-center justify-between gap-2">
-          <span className="text-muted-foreground text-sm font-normal">
+          <span className="text-muted-foreground text-xs font-semibold">
             Hora:
           </span>
-          <strong className="text-primary text-sm font-semibold">
+          <strong className="text-primary text-xs font-semibold">
             20/04/2025
           </strong>
         </li>
         <li className="flex items-center justify-between gap-2">
-          <span className="text-muted-foreground text-sm font-normal">
+          <span className="text-muted-foreground text-xs font-semibold">
             Nutricionista:
           </span>
-          <strong className="text-primary text-sm font-semibold">
+          <strong className="text-primary text-xs font-semibold">
             Gustavo Murdiga
           </strong>
         </li>
       </ul>
-      <footer className="mt-4 flex gap-3">
-        {index === 0 && (
-          <Button>
-            <Eye className="size-4" />
-            Visualizar
-          </Button>
-        )}
-        {index > 0 && (
-          <>
-            <Button variant={"default"}>
-              <Edit className="size-4" />
-              Editar consulta
-            </Button>
-            <Button variant={"destructive"}>
-              <Ban className="size-4" />
-              Cancelar consulta
-            </Button>
-          </>
-        )}
-      </footer>
+      <FooterCard index={index} />
     </motion.div>
   );
 }
