@@ -1,45 +1,34 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { collection, getDocs, query, where } from "firebase/firestore";
 
-import { db } from "@/lib/firebase";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getConsults } from "@/http/get-consults";
+import { useNutritionistStore } from "@/store/nutritionist";
 
 import { CardConsult } from "./components/card";
-import type { PayloadConsultProps } from "./components/modal-new-consult";
 
 export function Consults() {
+  const store = useNutritionistStore();
+
   const { data } = useQuery({
-    queryKey: ["consults"],
-    queryFn: async () => {
-      const consultsCollection = collection(db, "consults");
-      const date = new Date();
-      date.setHours(0, 0, 0, 0);
-
-      const q = query(consultsCollection, where("date", "==", date));
-
-      const consults = await getDocs(q);
-
-      return consults.docs.map((current) => {
-        return {
-          ...(current.data() as PayloadConsultProps),
-          id: current.id,
-        };
-      });
-    },
+    queryKey: ["consults", store.currentNutritionist.id],
+    queryFn: async () =>
+      getConsults({ nutritionistId: store.currentNutritionist.id }),
   });
 
-  console.log(data);
+  if (data?.length === 0) {
+    return Array.from({ length: 9 }).map((_, index) => (
+      <Skeleton key={index} className="h-64" />
+    ));
+  }
 
-  return data?.map(({ id, date, hour, patient, agendaId }, index) => (
+  return data?.map((props, index) => (
     <CardConsult
-      key={id}
-      id={id}
+      key={props.id}
+      {...props}
       index={index}
-      date={date}
-      hour={hour}
-      patient={patient}
-      agendaId={agendaId}
+      nutritionistId={store.currentNutritionist.id}
     />
   ));
 }

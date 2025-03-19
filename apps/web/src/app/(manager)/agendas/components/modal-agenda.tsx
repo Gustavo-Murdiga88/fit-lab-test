@@ -1,9 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { useMutation } from "@tanstack/react-query";
-import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
+import { addDays } from "date-fns";
 import { PlusCircle, Trash2 } from "lucide-react";
-import { type Ref } from "react";
+import { type Ref, useCallback } from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -20,8 +20,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { db } from "@/lib/firebase";
+import { createAgenda } from "@/http/create-agenda";
+import { editAgenda } from "@/http/edit-agenda";
 import { queryClient } from "@/lib/query-client";
+import { useNutritionistStore } from "@/store/nutritionist";
 
 import { TimesSelect } from "./times";
 
@@ -46,6 +48,22 @@ const scheme = z.object({
 
 export type AgendaProps = z.infer<typeof scheme>;
 
+const useReset = () => {
+  const store = useNutritionistStore();
+  const reset = useCallback(() => {
+    queryClient.invalidateQueries({
+      queryKey: ["agendas", store.currentNutritionist.id],
+    });
+    queryClient.refetchQueries({
+      queryKey: ["agendas", store.currentNutritionist.id],
+    });
+  }, [store.currentNutritionist.id]);
+
+  return {
+    reset,
+  };
+};
+
 export function ModalAgenda({
   ref,
   id,
@@ -66,8 +84,8 @@ export function ModalAgenda({
       times: times || [
         {
           interval: {
-            end: new Date(),
             start: new Date(),
+            end: addDays(new Date(), 20),
           },
           hours: [
             {
@@ -81,47 +99,42 @@ export function ModalAgenda({
     resolver: zodResolver(scheme),
   });
 
+  const { reset } = useReset();
+  const { currentNutritionist } = useNutritionistStore();
+
   const { fields, append, remove } = useFieldArray({
     name: "times",
     control: form.control,
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: AgendaProps) => {
-      await addDoc(collection(db, "agendas"), {
-        ...data,
-        intervalEnd: data.times.slice(-1)[0]?.interval.end,
-        intervalInit: data.times.slice(-1)[0]?.interval.start,
-      });
-    },
+    mutationFn: createAgenda,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["agendas"] });
-      queryClient.refetchQueries({ queryKey: ["agendas"] });
+      reset();
       (ref as any)?.current?.click();
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (data: AgendaProps) => {
-      const agenda = doc(db, "agendas", id as string);
-      await updateDoc(agenda, {
-        ...data,
-        intervalEnd: data.times.slice(-1)[0]?.interval.end,
-        intervalInit: data.times.slice(-1)[0]?.interval.start,
-      });
-    },
+    mutationFn: editAgenda,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["agendas"] });
-      queryClient.refetchQueries({ queryKey: ["agendas"] });
+      reset();
       (ref as any)?.current?.click();
     },
   });
 
   const handleSubmit = form.handleSubmit((data) => {
     if (id) {
-      updateMutation.mutate(data);
+      updateMutation.mutate({
+        ...data,
+        nutritionistId: currentNutritionist.id,
+        id,
+      });
     } else {
-      mutation.mutate(data);
+      mutation.mutate({
+        nutritionistId: currentNutritionist.id,
+        ...data,
+      });
     }
   });
 
@@ -187,8 +200,8 @@ export function ModalAgenda({
                       onSelect={(date) => {
                         if (date) {
                           form.setValue(`times.${index}.interval`, {
-                            end: (date as any).to,
                             start: (date as any).from,
+                            end: (date as any).to,
                           });
                         }
                       }}

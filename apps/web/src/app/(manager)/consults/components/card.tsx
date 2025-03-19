@@ -1,11 +1,13 @@
 "use client";
+import { useMutation } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { collection, deleteDoc, doc } from "firebase/firestore";
 import { motion } from "framer-motion";
 import { Ban, Edit, Eye } from "lucide-react";
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -15,94 +17,99 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { db } from "@/lib/firebase";
+import { queryClient } from "@/lib/query-client";
+import { useNutritionistStore } from "@/store/nutritionist";
 
-import { ModalConsult } from "./modal-new-consult";
+import { ModalConsult, type ModalConsultProps } from "./modal-new-consult";
 
-function FooterCard({
-  index,
-  hour,
-  date,
-  patient,
-  agendaId,
-  id,
-}: {
-  index: number;
-  id: string;
-  date?: Date;
-  hour?: string;
-  patient?: string;
-  agendaId?: string;
-}) {
+type FooterCardProps = ModalConsultProps;
+
+const useReset = () => {
+  const reset = useCallback(() => {
+    queryClient.invalidateQueries({
+      queryKey: ["consults"],
+    });
+    queryClient.invalidateQueries({
+      queryKey: ["consults"],
+    });
+    queryClient.invalidateQueries({
+      queryKey: ["consults-modal"],
+    });
+    queryClient.refetchQueries({
+      queryKey: ["consults-modal"],
+    });
+  }, []);
+  return {
+    reset,
+  };
+};
+
+function FooterCard({ ...modalProps }: FooterCardProps) {
   const ref = useRef<HTMLButtonElement>(null);
+  const refAction = useRef<HTMLButtonElement>(null);
+
+  const { reset } = useReset();
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const consultCollection = collection(db, "consults");
+      const currentDoc = doc(consultCollection, modalProps.id as string);
+
+      await deleteDoc(currentDoc);
+    },
+    onSuccess: () => {
+      reset();
+      refAction.current?.click();
+    },
+  });
 
   return (
     <>
       <footer className="mt-4 flex gap-3">
-        {index === 0 && (
-          <Button>
-            <Eye className="size-4" />
-            Visualizar
+        <>
+          <Button onClick={() => ref.current?.click()} variant={"default"}>
+            <Edit className="size-4" />
+            Editar consulta
           </Button>
-        )}
-        {index > 0 && (
-          <>
-            <Button onClick={() => ref.current?.click()} variant={"default"}>
-              <Edit className="size-4" />
-              Editar consulta
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant={"destructive"}>
-                  <Ban className="size-4" />
-                  Cancelar consulta
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant={"destructive"}>
+                <Ban className="size-4" />
+                Cancelar consulta
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="border-b p-2">
+                  Você tem certeza?
+                </AlertDialogTitle>
+                <AlertDialogDescription className="font-normal">
+                  Esta ação irá cancelar a consulta e não poderá ser desfeita,
+                  após a confirmação a agenda do seu paciente será atualizada.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="border-t pt-4">
+                <AlertDialogCancel ref={refAction}>Cancelar</AlertDialogCancel>
+                <Button onClick={() => deleteMutation.mutate()}>
+                  Confirmar
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="border-b p-2">
-                    Você tem certeza?
-                  </AlertDialogTitle>
-                  <AlertDialogDescription className="font-normal">
-                    Esta ação irá cancelar a consulta e não poderá ser desfeita,
-                    após a confirmação a agenda do seu paciente será atualizada.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter className="border-t pt-4">
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction>Confirmar</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </>
-        )}
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </>
       </footer>
-      <ModalConsult
-        id="1asda"
-        ref={ref}
-        date={date}
-        hour={hour}
-        patient={patient}
-        agendaId={agendaId}
-      />
+      <ModalConsult {...modalProps} ref={ref} />
     </>
   );
 }
 
-export function CardConsult({
-  index,
-  date,
-  hour,
-  patient,
-  agendaId,
-  id,
-}: {
-  index: number;
-  date: Date;
-  hour: string;
-  patient: string;
-  agendaId: string;
-  id: string;
-}) {
+type CadConsultProps = ModalConsultProps & { index: number };
+
+export function CardConsult({ index, ...footerProps }: CadConsultProps) {
+  const store = useNutritionistStore();
+  const { date, hour, patient } = footerProps;
+
   return (
     <motion.div
       layout
@@ -123,31 +130,14 @@ export function CardConsult({
       }}
       className="bg-card relative flex flex-col rounded-md border p-4"
     >
-      {index === 0 && (
-        <div className="absolute top-4 right-4 rounded-sm border border-emerald-400 bg-emerald-600 p-1 text-xs font-semibold">
-          Finalizada
-        </div>
-      )}
-      {index === 1 && (
-        <div className="absolute top-4 right-4 rounded-sm border border-red-400 bg-red-500 p-1 text-xs font-semibold">
-          Cancelada
-        </div>
-      )}
-
-      {index === 2 && (
-        <div className="absolute top-4 right-4 rounded-sm border border-amber-400 bg-amber-500 p-1 text-xs font-semibold">
-          Agendada
-        </div>
-      )}
-
-      <strong className="text-lg">Gustavo Murdiga</strong>
+      <strong className="inline-block truncate text-lg">{patient}</strong>
       <ul className="my-2 inline-block space-y-2">
         <li className="flex items-center justify-between gap-2">
           <span className="text-muted-foreground text-xs font-semibold">
             Dia:
           </span>
           <strong className="text-primary text-xs font-semibold">
-            20/04/2025
+            {format((date as any).toDate(), "dd/MM/yyyy")}
           </strong>
         </li>
         <li className="flex items-center justify-between gap-2">
@@ -155,7 +145,7 @@ export function CardConsult({
             Hora:
           </span>
           <strong className="text-primary text-xs font-semibold">
-            20/04/2025
+            {hour?.replace("-", " - ")}
           </strong>
         </li>
         <li className="flex items-center justify-between gap-2">
@@ -163,18 +153,11 @@ export function CardConsult({
             Nutricionista:
           </span>
           <strong className="text-primary text-xs font-semibold">
-            Gustavo Murdiga
+            {store.currentNutritionist.name}
           </strong>
         </li>
       </ul>
-      <FooterCard
-        index={index}
-        id={id}
-        date={date}
-        hour={hour}
-        patient={patient}
-        agendaId={agendaId}
-      />
+      <FooterCard {...footerProps} />
     </motion.div>
   );
 }

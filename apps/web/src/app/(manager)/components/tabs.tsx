@@ -4,13 +4,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { useNutritionistStore } from "@/store/nutritionist";
 
 export function Tabs() {
+  const { currentNutritionist } = useNutritionistStore();
+
   const pathname = usePathname();
 
   return (
-    <div className="mx-auto mt-10 max-w-[71.25rem] border-b">
-      <Button className="rounded-b-none" asChild variant={"ghost"}>
+    <div className="mx-auto mt-10 max-w-[71.25rem] border-b px-4">
+      <Button
+        className="rounded-b-none"
+        disabled={!currentNutritionist.id}
+        asChild
+        variant={"ghost"}
+      >
         <Link className="relative" href={"/consults"} prefetch>
           Consultas
           {pathname === "/consults" && (
@@ -21,7 +29,12 @@ export function Tabs() {
           )}
         </Link>
       </Button>
-      <Button className="rounded-b-none" asChild variant={"ghost"}>
+      <Button
+        disabled={!currentNutritionist.id}
+        className="rounded-b-none"
+        asChild
+        variant={"ghost"}
+      >
         <Link className="relative" href={"/agendas"}>
           Agendas
           {pathname === "/agendas" && (

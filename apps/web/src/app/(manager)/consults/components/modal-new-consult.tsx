@@ -1,15 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-  addDoc,
-  collection,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  where,
-} from "firebase/firestore";
-import { type Ref, useMemo } from "react";
+import { Timestamp } from "firebase/firestore";
+import { type Ref, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -36,25 +28,40 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { db } from "@/lib/firebase";
-import { queryClient } from "@/lib/query-client";
+import { createNewConsult } from "@/http/create-consult";
+import { editConsult } from "@/http/edit-mutation";
+import { fetchModalAgendas } from "@/http/fetch-modal-agendas";
+import { fetchModalConsults } from "@/http/fetch-modal-consults";
 import { generateTimerValues } from "@/utils/generate-timer-values";
 
-import type { AgendaProps } from "../../agendas/components/modal-agenda";
+import { useHoursAvailable } from "../hooks/use-hours-available";
+import { useInitAndEndDate } from "../hooks/use-init-and-end-date";
+import { useReset } from "../hooks/use-reset";
 
 const scheme = z.object({
   patient: z.string().min(1),
   date: z.date(),
   hour: z.string(),
+  agendaId: z.string().optional(),
 });
 
 type ConsultFormProps = z.infer<typeof scheme>;
 
 export type PayloadConsultProps = ConsultFormProps & {
   nutritionistId: string;
-  agendaId: string;
 };
 
+export type ModalConsultProps = {
+  id?: string;
+  date?: Date;
+  hour?: string;
+  patient?: string;
+  agendaId?: string;
+  nutritionistId: string;
+};
+
+const dateDefault = new Date();
+dateDefault.setHours(0, 0, 0, 0);
 export function ModalConsult({
   ref,
   id,
@@ -63,127 +70,104 @@ export function ModalConsult({
   patient,
   agendaId,
   nutritionistId,
-}: {
-  ref: Ref<HTMLButtonElement>;
-  id?: string;
-  date?: Date;
-  hour?: string;
-  patient?: string;
-  agendaId: string;
-  nutritionistId: string;
-}) {
+}: ModalConsultProps & { ref: Ref<HTMLButtonElement> }) {
+  const [fetchEnable, setFetchEnable] = useState(false);
+
   const form = useForm<ConsultFormProps>({
     resolver: zodResolver(scheme),
     defaultValues: {
-      date: date || new Date(),
+      date: (date as unknown as Timestamp)?.toDate() || dateDefault,
       hour: hour || "",
       patient: patient || "",
+      agendaId: agendaId || "",
     },
   });
 
+  const dateSelect = form.watch("date");
+  const { reset } = useReset({ nutritionistId });
+
   const { data } = useQuery({
-    queryKey: ["agendas-modal-consults"],
-    queryFn: async () => {
-      const agendasCollection = collection(db, "agendas");
-      const date = new Date();
-      date.setHours(0, 0, 0, 0);
-
-      const q = query(
-        agendasCollection,
-        where("intervalEnd", ">=", date),
-        orderBy("intervalEnd", "desc"),
-        limit(1),
-      );
-      const agendas = await getDocs(q);
-
-      return agendas.docs.map((current) => {
-        return {
-          ...(current.data() as AgendaProps),
-          id,
-        };
-      });
-    },
+    enabled: fetchEnable,
+    queryKey: ["agendas-modal-consults", nutritionistId],
+    queryFn: async () =>
+      fetchModalAgendas({
+        nutritionistId,
+      }),
   });
 
   const { data: consultsData } = useQuery({
-    queryKey: ["consults"],
-    queryFn: async () => {
-      const consultsCollection = collection(db, "consults");
-      const date = new Date();
-      date.setHours(0, 0, 0, 0);
-
-      const q = query(consultsCollection, where("date", "==", date));
-
-      const consults = await getDocs(q);
-
-      return consults.docs.map((current) => {
-        return {
-          ...(current.data() as PayloadConsultProps),
-          id: current.id,
-        };
-      });
-    },
+    queryKey: ["consults-modal", dateSelect.getDate()],
+    enabled: !!nutritionistId && fetchEnable,
+    queryFn: async () =>
+      fetchModalConsults({ nutritionistId, date: dateSelect }),
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: PayloadConsultProps) => {
-      const consultsCollection = collection(db, "consults");
-
-      await addDoc(consultsCollection, data);
-    },
+    mutationFn: createNewConsult,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["consults"] });
-      queryClient.refetchQueries({ queryKey: ["consults"] });
+      reset();
       (ref as any).current?.click();
       form.reset();
     },
   });
 
-  const handleSubmit = form.handleSubmit(
-    async (data) => {
+  const editMutation = useMutation({
+    mutationFn: editConsult,
+    onSuccess: () => {
+      reset();
+      (ref as any).current?.click();
+      form.reset();
+    },
+  });
+
+  const handleSubmit = form.handleSubmit(async (data) => {
+    data.date.setHours(0, 0, 0, 0);
+    if (id) {
+      editMutation.mutate({
+        date: data.date,
+        hour: data.hour,
+        patient: data.patient,
+        agendaId: data.agendaId,
+        nutritionistId,
+        id,
+      });
+    } else {
       mutation.mutate({
-        ...data,
-        agendaId,
+        date: data.date,
+        hour: data.hour,
+        patient: data.patient,
+        agendaId: data.agendaId,
         nutritionistId,
       });
-    },
-    (err) => {
-      console.log(err);
-    },
-  );
+    }
+  });
 
   const options = useMemo(() => generateTimerValues(), []);
+  const { hoursAvailableToday } = useHoursAvailable({
+    consultsData,
+    data,
+    hour,
+    options,
+  });
 
-  const hoursAvailableToday = useMemo(() => {
-    let rangeOptions: Array<{ label: string; value: string }> = [];
-    if (data?.length) {
-      data.forEach(({ times }) =>
-        times.forEach(({ hours }) =>
-          hours.forEach(({ end, start }) => {
-            const initIndex = options.findIndex((hour) => hour.value === start);
-            const endIndex = options.findIndex((hour) => hour.value === end);
+  const { initAndEndDate } = useInitAndEndDate({
+    data,
+  });
 
-            const optionsIndex = options.slice(initIndex, endIndex + 1);
+  useEffect(() => {
+    const agenda = form.getValues("agendaId");
 
-            rangeOptions.push(...optionsIndex);
-          }),
-        ),
-      );
+    if (!agenda && data && data?.length > 0) {
+      form.setValue("agendaId", data[0]?.id);
     }
-
-    if (consultsData?.length) {
-      rangeOptions = rangeOptions.filter(
-        ({ value }) =>
-          !consultsData.some((consult) => consult.hour === value) ||
-          value === hour,
-      );
-    }
-
-    return rangeOptions;
-  }, [data, consultsData]);
+  }, [data]);
 
   return (
-    <Dialog>
+    <Dialog
+      onOpenChange={(open) => {
+        setFetchEnable(open);
+      }}
+    >
       <DialogTrigger ref={ref} />
       <DialogContent className="max-w-[700px] min-w-max">
         <DialogHeader className="border-b pb-2">
@@ -201,9 +185,16 @@ export function ModalConsult({
           <div className="col-span-12 space-y-2">
             <Label>Data</Label>
             <DatePickerSingle
-              onSelect={(data) => {
-                if (data) {
-                  form.setValue("date", data as never);
+              disabled={
+                initAndEndDate && {
+                  after: initAndEndDate.end,
+                  before: dateDefault,
+                }
+              }
+              onSelect={(date) => {
+                if (date) {
+                  (date as Date).setHours(0, 0, 0, 0);
+                  form.setValue("date", date as never);
                 }
               }}
             />

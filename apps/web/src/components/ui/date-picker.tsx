@@ -4,7 +4,7 @@ import { addDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale/pt-BR";
 import { CalendarIcon } from "lucide-react";
 import * as React from "react";
-import type { DateRange } from "react-day-picker";
+import type { DateRange, DayPickerBase } from "react-day-picker";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -50,7 +50,7 @@ export function DatePickerWithRange({
                 format(date.from, "dd/MM/yyyy")
               )
             ) : (
-              <span>Pick a date</span>
+              <span>Selecione uma data</span>
             )}
           </Button>
         </PopoverTrigger>
@@ -77,7 +77,9 @@ export function DatePickerSingle({
   className,
   id,
   onSelect,
+  disabled,
 }: React.HTMLAttributes<HTMLDivElement> & {
+  disabled?: DayPickerBase["disabled"];
   onSelect?: (range: Date | undefined) => void;
 }) {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
@@ -95,7 +97,11 @@ export function DatePickerSingle({
             )}
           >
             <CalendarIcon />
-            {date ? format(date, "dd/MM/yyyy") : <span>Pick a date</span>}
+            {date ? (
+              format(date, "dd/MM/yyyy")
+            ) : (
+              <span>Selecione uma data</span>
+            )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
@@ -103,6 +109,7 @@ export function DatePickerSingle({
             locale={ptBR}
             initialFocus
             mode="single"
+            disabled={disabled}
             defaultMonth={date}
             selected={date}
             onSelect={(data) => {

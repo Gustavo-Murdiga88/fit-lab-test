@@ -28,7 +28,7 @@ export default function RootLayout({
     <html
       lang="pt-br"
       className="dark"
-      suppressHydrationWarning={false}
+      suppressHydrationWarning
       data-lt-installed
     >
       <body className={`${inter.variable} font-inter antialiased`}>

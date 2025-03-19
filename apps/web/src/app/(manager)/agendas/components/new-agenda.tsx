@@ -12,7 +12,7 @@ export function NewAgenda() {
 
   return (
     <>
-      <Button className="ml-auto" onClick={() => ref.current?.click()}>
+      <Button className="mx-4 md:ml-auto" onClick={() => ref.current?.click()}>
         <PlusCircle className="size-4" />
         Nova Agenda
       </Button>

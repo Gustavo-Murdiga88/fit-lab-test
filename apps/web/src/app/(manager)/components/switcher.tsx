@@ -1,8 +1,8 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
-import { collection, getDocs, limit, orderBy, query } from "firebase/firestore";
+import clsx from "clsx";
 import { PlusCircle, User2 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -13,32 +13,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import { db } from "@/lib/firebase";
+import { getNutritionists } from "@/http/get-nutritionists";
+import { useNutritionistStore } from "@/store/nutritionist";
 
 import { ModalNutritionist } from "./modal-new-nutritionist";
 
 export function Switcher() {
-  const [nutritionist, setNutritionist] = useState<string | null>(null);
+  const store = useNutritionistStore();
 
   const { data, isLoading, status } = useQuery({
     queryKey: ["nutritionists"],
-    queryFn: async () => {
-      const q = query(
-        collection(db, "nutritionists"),
-        orderBy("name", "desc"),
-        limit(5),
-      );
-      const result = await getDocs(q);
-      const nutritionistsFromDb = result.docs.map((current) => {
-        return {
-          name: current.data().name as string,
-          crn: current.data().crn as string,
-          id: current.id,
-        };
-      });
-
-      return nutritionistsFromDb;
-    },
+    queryFn: getNutritionists,
   });
 
   const ref = useRef<HTMLButtonElement>(null);
@@ -52,13 +37,17 @@ export function Switcher() {
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center px-1 text-sm">
           <User2 className="mr-2 inline-block size-4" />
-          {nutritionist || "Selecione um nutricionista"}
+          {store.currentNutritionist.name || "Selecione um nutricionista"}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" sideOffset={10}>
           {data?.map((nutritionist) => (
             <DropdownMenuItem
               onClick={() => {
-                setNutritionist(nutritionist.name);
+                store.setCurrentNutritionist({
+                  crn: nutritionist.crn,
+                  id: nutritionist.id,
+                  name: nutritionist.name,
+                });
               }}
               key={nutritionist.id}
             >
@@ -71,7 +60,9 @@ export function Switcher() {
               {nutritionist.name}
             </DropdownMenuItem>
           ))}
-          <DropdownMenuSeparator />
+          <DropdownMenuSeparator
+            className={clsx(data?.length === 0 && "hidden")}
+          />
           <DropdownMenuItem onClick={() => ref.current?.click()}>
             <PlusCircle className="mr-2 size-4" />
             Adicione um novo nutricionista
