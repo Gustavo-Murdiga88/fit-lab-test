@@ -88,7 +88,11 @@ export function ModalAgenda({
 
   const mutation = useMutation({
     mutationFn: async (data: AgendaProps) => {
-      await addDoc(collection(db, "agendas"), data);
+      await addDoc(collection(db, "agendas"), {
+        ...data,
+        intervalEnd: data.times.slice(-1)[0]?.interval.end,
+        intervalInit: data.times.slice(-1)[0]?.interval.start,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["agendas"] });
@@ -100,7 +104,11 @@ export function ModalAgenda({
   const updateMutation = useMutation({
     mutationFn: async (data: AgendaProps) => {
       const agenda = doc(db, "agendas", id as string);
-      await updateDoc(agenda, data);
+      await updateDoc(agenda, {
+        ...data,
+        intervalEnd: data.times.slice(-1)[0]?.interval.end,
+        intervalInit: data.times.slice(-1)[0]?.interval.start,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["agendas"] });
@@ -175,7 +183,17 @@ export function ModalAgenda({
                 <div key={id} className="col-span-12 flex gap-4">
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="interval">Intervalo</Label>
-                    <DatePickerWithRange id="interval" />
+                    <DatePickerWithRange
+                      onSelect={(date) => {
+                        if (date) {
+                          form.setValue(`times.${index}.interval`, {
+                            end: (date as any).to,
+                            start: (date as any).from,
+                          });
+                        }
+                      }}
+                      id="interval"
+                    />
                   </div>
                 </div>
 

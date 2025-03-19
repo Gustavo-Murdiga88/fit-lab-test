@@ -16,7 +16,11 @@ export function NewConsult() {
         <PlusCircle className="size-4" />
         Criar uma nova consulta
       </Button>
-      <ModalConsult ref={ref} />
+      <ModalConsult
+        ref={ref}
+        agendaId="Zj12iLRXven8QazgTO63"
+        nutritionistId="7q2k1k5kDfMRHsgR3mLc"
+      />
     </>
   );
 }

@@ -18,7 +18,21 @@ import { Button } from "@/components/ui/button";
 
 import { ModalConsult } from "./modal-new-consult";
 
-function FooterCard({ index }: { index: number }) {
+function FooterCard({
+  index,
+  hour,
+  date,
+  patient,
+  agendaId,
+  id,
+}: {
+  index: number;
+  id: string;
+  date?: Date;
+  hour?: string;
+  patient?: string;
+  agendaId?: string;
+}) {
   const ref = useRef<HTMLButtonElement>(null);
 
   return (
@@ -62,12 +76,33 @@ function FooterCard({ index }: { index: number }) {
           </>
         )}
       </footer>
-      <ModalConsult id="1asda" ref={ref} />
+      <ModalConsult
+        id="1asda"
+        ref={ref}
+        date={date}
+        hour={hour}
+        patient={patient}
+        agendaId={agendaId}
+      />
     </>
   );
 }
 
-export function CardConsult({ index }: { index: number }) {
+export function CardConsult({
+  index,
+  date,
+  hour,
+  patient,
+  agendaId,
+  id,
+}: {
+  index: number;
+  date: Date;
+  hour: string;
+  patient: string;
+  agendaId: string;
+  id: string;
+}) {
   return (
     <motion.div
       layout
@@ -132,7 +167,14 @@ export function CardConsult({ index }: { index: number }) {
           </strong>
         </li>
       </ul>
-      <FooterCard index={index} />
+      <FooterCard
+        index={index}
+        id={id}
+        date={date}
+        hour={hour}
+        patient={patient}
+        agendaId={agendaId}
+      />
     </motion.div>
   );
 }

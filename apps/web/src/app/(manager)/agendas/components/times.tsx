@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import type { FormProviderProps } from "./modal-agenda";
+import type { AgendaProps } from "./modal-agenda";
 
 export function Options() {
   const options = useMemo(() => {
@@ -36,14 +36,12 @@ export function Options() {
 }
 
 export function TimesSelect({ index }: { index: number }) {
-  const { control } = useFormContext<FormProviderProps>();
+  const { control } = useFormContext<AgendaProps>();
 
   const { append, fields, remove, update } = useFieldArray({
     name: `times.${index}.hours`,
     control: control,
   });
-
-  console.log(fields);
 
   return fields.map(({ id, end, start }, hourIndex) => (
     <div className="col-span-12 flex gap-3" key={id}>
