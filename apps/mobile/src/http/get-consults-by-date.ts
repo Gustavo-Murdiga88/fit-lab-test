@@ -1,13 +1,7 @@
-import {
-  collection,
-  getDocs,
-  query,
-  Timestamp,
-  where,
-} from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
+
 import type { PayloadConsultProps } from "../hooks/use-hours-availible";
 import { db } from "../lib/firebase";
-
 
 export async function fetchConsultsByDate({
   nutritionistId,
@@ -17,7 +11,7 @@ export async function fetchConsultsByDate({
   date: Date;
 }) {
   const consultsCollection = collection(db, "consults");
-
+  date.setHours(0, 0, 0, 0);
   const q = query(
     consultsCollection,
     where("nutritionistId", "==", nutritionistId),

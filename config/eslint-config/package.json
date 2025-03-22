@@ -6,7 +6,7 @@
   "exports": {
     "./base": "./base.js",
     "./next-js": "./next.js",
-    "./react-internal": "./react-internal.js"
+    "./react": "./react.js"
   },
   "devDependencies": {
     "@gm-dev/eslint-config": "^2.0.1",

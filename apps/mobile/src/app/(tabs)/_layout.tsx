@@ -1,6 +1,5 @@
 import { Tabs } from "expo-router";
-import { SymbolView } from "expo-symbols"
-
+import { SymbolView } from "expo-symbols";
 
 export default function RootLayout() {
   return (
@@ -20,18 +19,24 @@ export default function RootLayout() {
         tabBarStyle: {
           borderTopWidth: 0,
           backgroundColor: "#18181b",
-        }
+        },
       }}
     >
-      <Tabs.Screen name="(agendas)"
+      <Tabs.Screen
+        name="(agendas)"
         options={{
           title: "Agendas disponíveis",
-          tabBarIcon: () => <SymbolView name="house" weight="bold" tintColor={"#fff"} />,
+          tabBarIcon: () => (
+            <SymbolView name="house" weight="bold" tintColor={"#fff"} />
+          ),
         }}
       />
-      <Tabs.Screen name="consults"
+      <Tabs.Screen
+        name="consults"
         options={{
-          tabBarIcon: () => <SymbolView name="book" weight="bold" tintColor={"#fff"} />,
+          tabBarIcon: () => (
+            <SymbolView name="book" weight="bold" tintColor={"#fff"} />
+          ),
           title: "Consultas",
         }}
       />

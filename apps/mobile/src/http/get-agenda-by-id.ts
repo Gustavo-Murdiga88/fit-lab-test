@@ -1,42 +1,38 @@
-import {
-  collection,
-  doc,
-  getDoc,
-  Timestamp
-} from "firebase/firestore";
-import { db } from "../lib/firebase";
+import { collection, doc, getDoc, Timestamp } from "firebase/firestore";
 
+import { db } from "../lib/firebase";
 
 export type AgendaProps = {
   title: string;
   subTitle: string;
   times: {
     interval: {
-      start: Date,
-      end: Date,
-    },
+      start: Date;
+      end: Date;
+    };
     hours: {
       start: string;
       end: string;
-    }[]
-  }[]
-}
+    }[];
+  }[];
+};
 
-export async function getAgendaById({
-  id
-}: { id: string }) {
+export async function getAgendaById({ id }: { id: string }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const result = await getDoc(doc(collection(db, "agendas"), id));
-  const current = result.data() as any
+  const current = result.data() as any;
 
-  const nutritionist = await getDoc(doc(collection(db, "nutritionists"), current.nutritionistId));
+  const nutritionist = await getDoc(
+    doc(collection(db, "nutritionists"), current.nutritionistId),
+  );
 
   return {
     nutritionist: {
+      id: current.nutritionistId as string,
       name: (nutritionist.data() as any).name as string,
-      crn: (nutritionist.data() as any).crn as string
+      crn: (nutritionist.data() as any).crn as string,
     },
     initialInterval: (current.intervalInit as unknown as Timestamp).toDate(),
     finalInterval: (current.intervalEnd as unknown as Timestamp).toDate(),
@@ -50,6 +46,6 @@ export async function getAgendaById({
           start: (interval.start as unknown as Timestamp).toDate(),
         },
       }),
-    )
-  }
+    ),
+  };
 }

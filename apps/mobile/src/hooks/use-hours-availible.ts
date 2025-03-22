@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import type { AgendaProps } from "../http/get-agenda-by-id";
 
+import type { AgendaProps } from "../http/get-agenda-by-id";
 
 export type PayloadConsultProps = {
   patient: string;
@@ -25,6 +25,10 @@ export function useHoursAvailable({
   }[];
 }) {
   const hoursAvailableToday = useMemo(() => {
+    if (!consultsData) {
+      return [];
+    }
+
     let rangeOptions: Array<{ label: string; value: string }> = [];
     if (data) {
       data.times.forEach(({ hours }) =>
@@ -39,13 +43,11 @@ export function useHoursAvailable({
       );
     }
 
-    if (consultsData?.length) {
-      rangeOptions = rangeOptions.filter(
-        ({ value }) =>
-          !consultsData.some((consult) => consult.hour === value) ||
-          value === hour,
-      );
-    }
+    rangeOptions = rangeOptions.filter(
+      ({ value }) =>
+        !consultsData.some((consult) => consult.hour === value) ||
+        value === hour,
+    );
 
     return rangeOptions;
   }, [data, consultsData]);

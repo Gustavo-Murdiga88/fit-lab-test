@@ -4,10 +4,13 @@ export default function ConsultasLayout() {
   return (
     <Stack
       screenOptions={{
-        headerShown: false
+        headerStyle: {
+          backgroundColor: "#18181b",
+        },
+        headerTintColor: "#fff",
       }}
     >
-      <Stack.Screen name="page" options={{ title: "Consultas" }} />
+      <Stack.Screen name="index" options={{ title: "Consultas confirmadas" }} />
     </Stack>
   );
 }

@@ -10,17 +10,20 @@ export default function AgendasLayout() {
         headerTintColor: "#fff",
       }}
     >
-      <Stack.Screen name="index"
+      <Stack.Screen
+        name="index"
         options={{
           headerTitle: "Agendas disponíveis",
         }}
       />
-      <Stack.Screen name="[id]"
+      <Stack.Screen
+        name="[id]"
         options={{
           headerTitle: "Agenda",
         }}
       />
-      <Stack.Screen name="consult"
+      <Stack.Screen
+        name="consult"
         options={{
           headerTitle: "Criar nova consulta",
         }}
