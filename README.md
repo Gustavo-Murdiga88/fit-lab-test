@@ -64,16 +64,16 @@ Obs: Ao aceitar esse desafio, um dos requisitos, era que deveríamos utilizar o 
   
   - Após a criação do banco crie dois indices da seguinte forma
 
-  ![imagem que descreve como criar os indexes da aplicação](image.png) 
+  ![imagem que descreve como criar os indexes da aplicação](./assets/image.png) 
 
   - Configure o acesso total o banco de dados
-  ![Configuração total do banco de dados](image-1.png)
+  ![Configuração total do banco de dados](./assets/image-1.png)
 
   - Então crie um json do google dentro do seu painel de console para criar a permissão de uso banco de dados. <a href="https://console.cloud.google.com/">google console</a>
 
   - Ao gerar o JSON key, adicione na raiz de cada projeto. Renomeie o arquivo para "fit-lab-db.json" 
 
-    ![colocando o json key no projeto](image-2.png)
+    ![colocando o json key no projeto](./assets/image-2.png)
 
 
   - obs: esta é uma aplicação de teste, por isso não estamos se atentando a segurança dos dados, estamos criando um ambiente simples para que tudo funcione de forma descomplicada!
@@ -96,18 +96,18 @@ Obs: Ao aceitar esse desafio, um dos requisitos, era que deveríamos utilizar o 
   ## Exemplos do funcionamento do sistema
 
    - web
-    <video src="./assets/funcionamento web.mov" controls preload autoplay="true"/>
-  
+  ![](./assets/funcionamento%20web.mov)
+
   - mobile
 
     <img src="./assets/mobile.gif"/>
 
   - Realtime
-    <video src="./assets/demonstrations.mov" controls preload autoplay="true"/>
+  ![](./assets/demonstrations.mov)
   
   
   - Delete Realtime
-    <video src="./assets/delete-real-time.mov" controls preload autoplay="true"/>
+   ![](./assets/delete-real-time.mov)
 
 
   ## Agradecimentos
