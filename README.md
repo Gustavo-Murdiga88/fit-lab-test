@@ -1,7 +1,7 @@
 ## Fit lab Teste
 
 <strong>
-  Este projeto tem como principal motivo, a apresentação de minha habilidades como desenvolvedor front-end e mobile, aos desenvolvedores da empresa fit-lab. Neste projeto procurei demonstrar meus conhecimentos com tecnologias utilizadas pela empresa, essas são, Next.js, React native (Expo) e firebase.
+  Este projeto tem como principal motivo, a apresentação de minhas habilidades como desenvolvedor front-end e mobile, aos desenvolvedores da empresa fit-lab. Neste projeto procurei demonstrar meus conhecimentos com tecnologias utilizadas pela empresa, essas são, Next.js, React native (Expo) e firebase.
 </strong>
 
 
@@ -41,7 +41,7 @@
 </br>
 
 <strong>
-Obs: Ao aceitar esse desafio, um dos requisitos, era que deveríamos utilizar o styled-components como ferramenta de estilizações de componentes, porém enfrentamos algumas dificuldades ao tentar implementar junto com o expo 52. Sendo assim, optamos em utilizar o <a href="https://www.nativewind.dev/">nativewind</a> que é uma biblioteca que traz para nós a possibilidade de estilizar os nossos components nativos usando <a href="https://tailwindcss.com/">Tailwindcss</a>. Isso trouxe ao projeto uma padronização, pois a web utiliza tailwind e uma facilidade enorme, pois a configuração do nativewind é relativamente fácil, e as estilizações dos componentes, são definidas através de classNames, não sendo necessário a criação de arquivos segregados para componentes e assim, deixando os components e páginas mais simples.
+Obs: Ao aceitar esse desafio, um dos requisitos, era que deveríamos utilizar o styled-components como ferramenta de estilizações de componentes, porém enfrentamos algumas dificuldades ao tentar implementar junto com o expo 52. Sendo assim, optamos em utilizar o <a href="https://www.nativewind.dev/">nativewind</a> que é uma biblioteca que traz para nós a possibilidade de estilizar os nossos components nativos usando <a href="https://tailwindcss.com/">Tailwindcss</a>. Isso trouxe ao projeto uma padronização, pois a web utiliza tailwind e é uma facilidade enorme, pois a configuração do nativewind é relativamente fácil, e as estilizações dos componentes, são definidas através de classNames, não sendo necessário a criação de arquivos segregados para componentes e assim, deixando os components e páginas mais simples.
 </strong>
 
 ## Configurando o projeto
@@ -113,7 +113,7 @@ Obs: Ao aceitar esse desafio, um dos requisitos, era que deveríamos utilizar o 
 
 
   ## Agradecimentos
-  <strong> agradeço a todos por me darem esta oportunidade foi um desafio diferente que pude desenvolver, porém devido as correrias do dia-a-dia não pude focar 100% no projeto de forma integral. Mas acredito que foi este contempla boas práticas, e uma forma simples de desenvolvimento que é o que as grandes empresas hoje procuram em um bom desenvolvedor. De qual quer forma, se o meu teste não for selecionado, agradeço por ter chego até aqui!
+  <strong> agradeço a todos por me darem esta oportunidade foi um desafio diferente que pude desenvolver, porém devido as correrias do dia-a-dia não pude focar 100% no projeto de forma integral. Mas acredito que este projeto contempla boas práticas, e uma forma simples de desenvolvimento, que é o que as grandes empresas, hoje procuram em um bom desenvolvedor. De qual quer forma, se o meu teste não for selecionado, agradeço por ter chego até aqui!
   Até breve se Deus quiser!
   </strong>
 
