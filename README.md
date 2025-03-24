@@ -96,18 +96,20 @@ Obs: Ao aceitar esse desafio, um dos requisitos, era que deveríamos utilizar o 
   ## Exemplos do funcionamento do sistema
 
    - web
-  ![](./assets/funcionamento%20web.mov)
+
+      <img src="./assets/funcionamento-web.gif" />
 
   - mobile
 
-    <img src="./assets/mobile.gif"/>
+      <img src="./assets/mobile.gif"/>
 
   - Realtime
-  ![](./assets/demonstrations.mov)
-  
-  
+
+      <img src="./assets/demonstrations.gif"/>
+
   - Delete Realtime
-   ![](./assets/delete-real-time.mov)
+
+      <img src="./assets/delete.gif"/>
 
 
   ## Agradecimentos
