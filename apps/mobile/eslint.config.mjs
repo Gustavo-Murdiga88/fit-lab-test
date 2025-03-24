@@ -9,6 +9,8 @@ export default [
         version: "detect",
       },
     },
+    files: ["./src/**/*.{ts,tsx,js.jsx}"],
+    ignores: ["node_modules", "./babel.config.cjs", "./metro.config.cjs"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
     },

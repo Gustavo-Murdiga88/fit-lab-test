@@ -111,6 +111,7 @@ export function ModalAgenda({
     mutationFn: createAgenda,
     onSuccess: () => {
       reset();
+      form.reset();
       (ref as any)?.current?.click();
     },
   });
@@ -119,6 +120,7 @@ export function ModalAgenda({
     mutationFn: editAgenda,
     onSuccess: () => {
       reset();
+      form.reset();
       (ref as any)?.current?.click();
     },
   });

@@ -32,7 +32,7 @@ export default function Consult() {
         patient: textInput.current,
         agendaId: params.agendaId,
       }),
-    onSuccess: async () => {
+    onSuccess: async ({ id }) => {
       await queryClient.refetchQueries({
         queryKey: ["consults", params.agendaId],
       });
@@ -42,6 +42,7 @@ export default function Consult() {
       ) as Array<any>;
       lastConsults.push({
         date: params.date,
+        id,
         hour: params.hour,
         nutritionistId: params.nutritionistId,
         patient: textInput.current,
@@ -60,10 +61,11 @@ export default function Consult() {
   return (
     <View className="flex-1 items-center justify-start bg-zinc-900 p-8">
       <Text className="my-2 mt-10 text-2xl font-bold text-zinc-100">
-        Gustavo Murdiga
+        {params.nutritionistName}
       </Text>
+
       <Text className="my-1 text-xl font-semibold text-zinc-100">
-        19:00 - 20:00
+        {params.hour}
       </Text>
       <Text className="my-2 mb-10 text-center text-sm font-semibold text-zinc-300">
         Apenas diga seu nome para agendar uma nova consulta, com o nosso
@@ -74,7 +76,7 @@ export default function Consult() {
         onChangeText={(value) => {
           textInput.current = value;
         }}
-        placeholder="Digite seu nome aqui:"
+        placeholder="Digite seu nome aqui"
         className="w-full rounded-lg border border-zinc-400 bg-zinc-500/15 p-4 text-zinc-100"
       />
 

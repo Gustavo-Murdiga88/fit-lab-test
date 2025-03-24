@@ -2,7 +2,6 @@
   "name": "fit-lab-test",
   "main": "expo-router/entry",
   "version": "1.0.0",
-  "type": "module",
   "scripts": {
     "dev": "expo start",
     "lint:fix": "eslint ./src --ext .ts,.tsx --fix",
@@ -49,7 +48,7 @@
     "@babel/runtime": "^7.26.10",
     "@config/eslint-config": "workspace:*",
     "@config/typescript-config": "workspace:*",
-    "@types/react": "18.3.19",
+    "@types/react": "19.0.10",
     "eslint": "^9.22.0",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",

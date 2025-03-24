@@ -5,5 +5,8 @@ import { db } from "../lib/firebase";
 
 export async function createNewConsult(data: PayloadConsultProps) {
   const consultsCollection = collection(db, "consults");
-  await addDoc(consultsCollection, data);
+  const result = await addDoc(consultsCollection, data);
+  return {
+    id: result.id,
+  };
 }

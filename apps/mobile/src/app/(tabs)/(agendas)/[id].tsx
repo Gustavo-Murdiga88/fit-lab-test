@@ -34,12 +34,20 @@ export default function Agenda() {
   const params = useGlobalSearchParams();
   const router = useRouter();
 
-  const { isLoading, data } = useQuery({
+  const {
+    isLoading,
+    data,
+    isPending: isLoadingAgenda,
+  } = useQuery({
     queryKey: ["agenda", params.id],
     queryFn: () => getAgendaById({ id: params.id as string }),
   });
 
-  const { data: consultsData, isPending } = useQuery({
+  const {
+    data: consultsData,
+    isPending,
+    isLoading: isLoadingConsult,
+  } = useQuery({
     enabled: !!data?.nutritionist.id,
     queryKey: ["consults", params.id, dateSelected.getDate()],
     queryFn: async () =>
@@ -78,7 +86,7 @@ export default function Agenda() {
 
     const days = Array.from({ length: difference })
       .map((_, index) => {
-        const date = addDays(data.initialInterval, index + 1);
+        const date = addDays(data.initialInterval, index);
 
         return {
           day: date.getDate(),
@@ -103,7 +111,7 @@ export default function Agenda() {
     consultsData,
   });
 
-  if (isLoading) {
+  if (isLoading || isPending || isLoadingConsult || isLoadingAgenda) {
     return (
       <View className="flex-1 items-center justify-center bg-zinc-900">
         <ActivityIndicator className="text-zinc-50" />

@@ -1,9 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Link, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
-import { FlatList } from "react-native-gesture-handler";
+import { useCallback, useEffect, useState } from "react";
+import { FlatList, Text, TouchableOpacity, View } from "react-native";
+import { toast } from "sonner-native";
+
+import { cancelConsult } from "@/src/http/cancel-consult";
+import { getRealTime } from "@/src/http/get-realtime";
 
 type StorageConsults = {
   date: string;
@@ -13,31 +17,62 @@ type StorageConsults = {
   agendaId: string;
   nutritionistName: string;
   nutritionistCRN: string;
+  id: string;
 };
 export default function Consultas() {
-  const [isLoading, setLoading] = useState(true);
   const [lastConsults, setConsults] = useState<StorageConsults[]>([]);
 
-  const getLastConsults = useCallback(async () => {
-    const lastConsults = JSON.parse(
-      (await AsyncStorage.getItem("@fit-lab::consultas")) || "[]",
-    ) as Array<StorageConsults>;
-
-    setConsults(lastConsults);
-    setLoading(false);
+  const getLastConsults = useCallback(() => {
+    AsyncStorage.getItem("@fit-lab::consultas").then((data) => {
+      const lastConsults = JSON.parse(data || "[]") as Array<StorageConsults>;
+      setConsults(lastConsults);
+    });
   }, []);
 
-  useFocusEffect(() => {
-    getLastConsults();
+  const removeConsults = useCallback(
+    async (id: string, showToast = true) => {
+      const copyConsults = lastConsults.filter((consult) => consult.id !== id);
+      await AsyncStorage.setItem(
+        "@fit-lab::consultas",
+        JSON.stringify(copyConsults),
+      );
+
+      if (showToast) toast.success("Consulta cancelada com sucesso!");
+
+      setConsults(copyConsults);
+    },
+    [lastConsults],
+  );
+
+  const cancelConsultMutation = useMutation({
+    mutationFn: cancelConsult,
+    onSuccess: async (_, id) => await removeConsults(id),
   });
 
-  if (isLoading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-zinc-900">
-        <ActivityIndicator className="text-zinc-50" />
-      </View>
-    );
-  }
+  useFocusEffect(getLastConsults);
+
+  useEffect(() => {
+    const { unsubscribe } = getRealTime({
+      collection: "consults",
+      onEvent: async (data) => {
+        const currentChanges = data
+          .docChanges()
+          .filter((change) => change.type === "removed")
+          .map((change) => {
+            return {
+              ...change.doc.data(),
+              id: change.doc.id,
+            };
+          });
+
+        for (const consult of currentChanges) {
+          await removeConsults(consult.id, false);
+        }
+      },
+    });
+
+    return () => unsubscribe();
+  }, [removeConsults]);
 
   if (lastConsults.length === 0) {
     return (
@@ -60,7 +95,7 @@ export default function Consultas() {
     <FlatList
       className="flex-1 bg-zinc-900 p-4"
       data={lastConsults}
-      keyExtractor={({ date, hour }) => `${date.toString()}${hour.toString()}`}
+      keyExtractor={({ id }) => id}
       renderItem={({ item }) => (
         <View className="my-2 w-full rounded-xl border border-zinc-600 bg-zinc-800/40 p-4">
           <Text className="font-semibold text-zinc-500">Paciente:</Text>
@@ -68,23 +103,31 @@ export default function Consultas() {
             {item.patient}
           </Text>
           <View className="mt-2 h-px bg-zinc-500" />
-          <View className="mt-3 flex flex-row justify-end gap-2">
+          <View className="mt-3 flex flex-row gap-2">
             <Text className="font-semibold text-zinc-400/80">Dia:</Text>
             <Text className="font-semibold text-zinc-400/80">
               {format(item.date, "dd/MM/yyyy")}
             </Text>
           </View>
-          <View className="mt-3 flex flex-row justify-end gap-2">
+          <View className="mt-3 flex flex-row gap-2">
             <Text className="font-semibold text-zinc-400/80">Agendado às:</Text>
             <Text className="font-semibold text-zinc-400/80">{item.hour}</Text>
           </View>
           <View className="my-3 h-px bg-zinc-500" />
-          <View className="flex items-end gap-1">
+          <View className="flex gap-1">
             <Text className="font-semibold text-zinc-100">Nutricionista:</Text>
             <Text className="font-semibold text-zinc-100">
               {item.nutritionistName}
             </Text>
           </View>
+          <TouchableOpacity
+            onPress={() => cancelConsultMutation.mutate(item.id)}
+            className="mt-4 flex gap-1 rounded-lg bg-red-500/40 p-4"
+          >
+            <Text className="self-center font-semibold text-zinc-100">
+              Cancelar consulta 🚫
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
     />

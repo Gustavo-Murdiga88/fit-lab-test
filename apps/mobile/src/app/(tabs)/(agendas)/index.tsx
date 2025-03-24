@@ -9,6 +9,7 @@ export default function Agendas() {
   const router = useRouter();
 
   const { isLoading, data } = useQuery({
+    refetchInterval: 1000 * 20, // 20 seconds
     queryFn: getAgendas,
     queryKey: ["agendas"],
   });
